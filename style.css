@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@900&family=Outfit:wght@300;400;700;900&display=swap');
+
 :root {
-    --primary: #0062ff;
-    --danger: #ff2d2d;
+    --blue: #0062ff;
+    --red: #ff2d2d;
+    --green: #22c55e;
     --bg: #020406;
-    --panel: rgba(13, 20, 29, 0.95);
 }
 
 body {
@@ -13,49 +15,41 @@ body {
     overflow: hidden;
 }
 
-.glass {
-    background: var(--panel);
-    border: 1px solid rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-}
+.font-big { font-family: 'Big Shoulders Display', sans-serif; }
+.glass { background: rgba(13, 17, 23, 0.98); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(15px); }
 
-.scanline {
-    width: 100%; height: 5px;
-    background: rgba(0, 98, 255, 0.1);
-    position: fixed;
-    animation: scan 6s linear infinite;
-    z-index: 999;
-}
+/* Effet Scanline */
+.scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 100, 0.06)); z-index: 9999; background-size: 100% 2px, 3px 100%; pointer-events: none; }
 
-@keyframes scan { from { top: 0; } to { top: 100%; } }
+/* Login */
+.login-container { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, #001e4d 0%, #020406 100%); }
+.login-card { width: 450px; padding: 50px; border-radius: 40px; text-align: center; border-top: 2px solid var(--blue); }
+.logo-anim { height: 120px; margin: 0 auto; filter: drop-shadow(0 0 20px rgba(0, 98, 255, 0.4)); }
+.input-modern { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 15px 15px 15px 50px; border-radius: 15px; color: white; outline: none; transition: 0.3s; }
+.input-modern:focus { border-color: var(--blue); box-shadow: 0 0 15px rgba(0,98,255,0.2); }
+.btn-login { width: 100%; background: var(--blue); padding: 16px; border-radius: 15px; font-weight: 900; font-size: 11px; letter-spacing: 2px; }
 
-/* Login Box */
-.login-overlay {
-    height: 100vh; display: flex; align-items: center; justify-content: center;
-}
-.login-box {
-    width: 400px; padding: 40px; border-radius: 30px; text-align: center;
-}
-.logo-main { height: 120px; margin-bottom: 20px; }
+/* Main Layout */
+.app-layout { display: flex; height: 100vh; padding: 20px; gap: 20px; }
+.sidebar { width: 320px; border-radius: 35px; padding: 35px; display: flex; flex-direction: column; }
+.main-content { flex: 1; display: flex; flex-direction: column; gap: 20px; }
 
-/* Dashboard Layout */
-.main-wrapper { display: flex; height: 100vh; padding: 15px; gap: 15px; }
-.sidebar { width: 300px; border-radius: 25px; padding: 25px; display: flex; flex-direction: column; }
-.content-area { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+.badge-side { height: 100px; margin: 0 auto; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); }
+.nav-label { font-size: 9px; font-weight: 900; color: #475569; letter-spacing: 4px; margin: 30px 0 10px 10px; }
+.nav-menu button { width: 100%; padding: 15px 20px; border-radius: 18px; display: flex; align-items: center; gap: 15px; font-size: 13px; font-weight: 700; color: #94a3b8; transition: 0.3s; margin-bottom: 5px; }
+.nav-menu button.active { background: var(--blue); color: white; box-shadow: 0 10px 20px rgba(0, 98, 255, 0.3); }
 
-.top-bar { height: 70px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; px: 30px; }
-.page-content { flex: 1; border-radius: 25px; padding: 30px; overflow-y: auto; }
+.top-header { height: 80px; border-radius: 25px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+.content-body { flex: 1; border-radius: 35px; padding: 40px; overflow-y: auto; }
 
-.hero-card { 
-    height: 250px; background: linear-gradient(45deg, var(--primary), #003080);
-    border-radius: 25px; position: relative; overflow: hidden; display: flex;
-    flex-direction: column; justify-content: center; padding-left: 40px;
-}
-.bg-logo { position: absolute; right: -50px; opacity: 0.1; height: 120%; transform: rotate(15deg); }
+.hero-banner { background: linear-gradient(45deg, #001e4d, #0062ff); padding: 60px; border-radius: 35px; position: relative; overflow: hidden; }
+.hero-bg { position: absolute; right: -50px; bottom: -50px; height: 140%; opacity: 0.15; transform: rotate(15deg); }
 
-/* Buttons & Inputs */
-input, select {
-    width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
-    padding: 15px; border-radius: 12px; color: white; margin-bottom: 10px;
-}
-.btn-primary { background: var(--primary); width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; }
+.stat-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 25px; text-align: center; }
+.data-row { padding: 25px; border-radius: 25px; margin-bottom: 15px; border-left: 5px solid var(--blue); }
+
+.badge-red { background: var(--red); color: white; padding: 4px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; }
+.badge-green { background: var(--green); color: white; padding: 4px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; }
+
+.btn-quit { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255, 45, 45, 0.3); color: var(--red); font-weight: 900; font-size: 10px; margin-top: 20px; }
+.la-logo { height: 50px; margin: 0 auto; opacity: 0.5; }
