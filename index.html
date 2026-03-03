@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDT - LAPD DAYTONA RP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --lapd-blue: #0a192f;
+            --lapd-accent: #1e3a8a;
+            --lapd-light-blue: #3b82f6;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            background-color: #020617;
+            color: #e2e8f0;
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+
+        /* Effet vitre Tablette */
+        .tablet-screen {
+            background: linear-gradient(135deg, rgba(10, 25, 47, 0.95) 0%, rgba(2, 6, 23, 1) 100%);
+            border: 2px solid #1e293b;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-item {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--lapd-light-blue);
+            color: white;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Scrollbar custom */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .hidden { display: none; }
+        
+        /* Animations */
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .wanted-flash { animation: pulse-red 2s infinite; }
+    </style>
+</head>
+<body class="p-4 flex items-center justify-center">
+
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950">
+        <div class="text-center p-8 glass-card rounded-xl max-w-md w-full border-t-4 border-blue-600">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Seal_of_the_Los_Angeles_Police_Department.svg" class="w-24 mx-auto mb-6" alt="LAPD Seal">
+            <h1 class="orbitron text-2xl font-bold mb-2">LAPD MDT v4.0</h1>
+            <p class="text-slate-400 mb-8 italic">Daytona RP - Specialized Mobile Unit</p>
+            
+            <div class="space-y-4">
+                <button onclick="loginWithDiscord()" class="w-full bg-[#5865F2] hover:bg-[#4752c4] text-white py-3 rounded-lg font-bold flex items-center justify-center gap-3 transition-transform active:scale-95">
+                    <i class="fab fa-discord text-xl"></i> SE CONNECTER AVEC DISCORD
+                </button>
+                <div class="flex items-center gap-2 text-slate-500 my-4">
+                    <hr class="flex-grow border-slate-700"> <span>OU</span> <hr class="flex-grow border-slate-700">
+                </div>
+                <input type="text" placeholder="Matricule" class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-white focus:outline-none focus:border-blue-500">
+                <input type="password" placeholder="Code d'accès" class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-white focus:outline-none focus:border-blue-500">
+                <button onclick="bypassLogin()" class="w-full bg-slate-800 hover:bg-slate-700 text-white py-2 rounded transition">Accès Manuel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="tablet-screen w-full h-full rounded-3xl flex overflow-hidden hidden">
+        
+        <aside class="w-64 bg-slate-900/80 border-r border-slate-800 flex flex-col">
+            <div class="p-6 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <img id="user-avatar" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full border border-blue-500">
+                    <div>
+                        <p id="user-name" class="font-bold text-sm">Officier</p>
+                        <p id="user-badge" class="text-xs text-blue-400">Matricule: 00-00</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-grow py-4">
+                <div onclick="switchTab('dashboard')" class="sidebar-item active p-4 cursor-pointer hover:bg-slate-800 flex items-center gap-3">
+                    <i class="fas fa-home"></i> Dashboard
+                </div>
+                <div onclick="switchTab('citizens')" class="sidebar-item p-4 cursor-pointer hover:bg-slate-800 flex items-center gap-3">
+                    <i class="fas fa-users"></i> Base Citoyens
+                </div>
+                <div onclick="switchTab('casiers')" class="sidebar-item p-4 cursor-pointer hover:bg-slate-800 flex items-center gap-3">
+                    <i class="fas fa-file-invoice"></i> Casiers Judiciaires
+                </div>
+                <div onclick="switchTab('reports')" class="sidebar-item p-4 cursor-pointer hover:bg-slate-800 flex items-center gap-3">
+                    <i class="fas fa-clipboard-list"></i> Rapports (Reports)
+                </div>
+                <div onclick="switchTab('investigations')" class="sidebar-item p-4 cursor-pointer hover:bg-slate-800 flex items-center gap-3">
+                    <i class="fas fa-search"></i> Enquêtes
+                </div>
+                <div onclick="switchTab('evidence')" class="sidebar-item p-4 cursor-pointer hover:bg-slate-800 flex items-center gap-3">
+                    <i class="fas fa-camera"></i> Galerie Preuves
+                </div>
+                
+                <div id="admin-menu" class="mt-8 border-t border-slate-800 pt-4 hidden">
+                    <p class="px-4 text-[10px] text-slate-500 uppercase tracking-widest mb-2 font-bold">Administration</p>
+                    <div onclick="switchTab('staff')" class="sidebar-item p-4 cursor-pointer hover:bg-red-900/20 text-red-400 flex items-center gap-3">
+                        <i class="fas fa-shield-halved"></i> Panel Staff
+                    </div>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="logout()" class="w-full text-slate-400 hover:text-white flex items-center gap-2 p-2 transition">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-grow flex flex-col">
+            <header class="h-16 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-900/40">
+                <div class="flex items-center gap-4">
+                    <span class="status-badge bg-green-500/20 text-green-500 border border-green-500">Unité active</span>
+                    <span id="current-time" class="orbitron text-sm tracking-widest">12:00:00</span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <i class="fas fa-wifi text-green-500"></i>
+                    <i class="fas fa-satellite"></i>
+                    <i class="fas fa-battery-three-quarters"></i>
+                </div>
+            </header>
+
+            <div id="content-viewport" class="p-8 overflow-y-auto h-full">
+                
+                <div id="tab-dashboard" class="tab-content space-y-6">
+                    <h2 class="orbitron text-2xl font-bold border-b border-blue-900/50 pb-2">TABLEAU DE BORD</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="glass-card p-6 rounded-xl border-l-4 border-blue-500">
+                            <h3 class="text-slate-400 text-sm">Interventions (24h)</h3>
+                            <p class="text-3xl font-bold mt-2">14</p>
+                        </div>
+                        <div class="glass-card p-6 rounded-xl border-l-4 border-red-500 wanted-flash">
+                            <h3 class="text-slate-400 text-sm">Mandats en cours</h3>
+                            <p class="text-3xl font-bold mt-2 text-red-500">03</p>
+                        </div>
+                        <div class="glass-card p-6 rounded-xl border-l-4 border-green-500">
+                            <h3 class="text-slate-400 text-sm">Officiers en service</h3>
+                            <p class="text-3xl font-bold mt-2 text-green-500">08</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                        <div class="glass-card rounded-xl p-6">
+                            <h3 class="font-bold mb-4 border-b border-slate-700 pb-2 flex justify-between">
+                                <span>Dernières Notifications</span>
+                                <i class="fas fa-bell text-blue-400"></i>
+                            </h3>
+                            <ul class="space-y-4">
+                                <li class="text-sm bg-slate-800/50 p-3 rounded border-l-2 border-yellow-500">
+                                    <span class="text-yellow-500 font-bold">[ALERTE]</span> Nouveau mandat d'arrêt émis contre <b>John Vercetti</b>.
+                                </li>
+                                <li class="text-sm bg-slate-800/50 p-3 rounded border-l-2 border-blue-500">
+                                    <span class="text-blue-500 font-bold">[INTERNAL]</span> Briefing général à 21h au central.
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="glass-card rounded-xl p-6">
+                            <h3 class="font-bold mb-4 border-b border-slate-700 pb-2">Accès Rapides</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <button class="p-4 bg-blue-900/30 rounded border border-blue-800 hover:bg-blue-800/50 transition flex flex-col items-center gap-2">
+                                    <i class="fas fa-user-plus text-xl"></i> Nouveau Citoyen
+                                </button>
+                                <button class="p-4 bg-red-900/30 rounded border border-red-800 hover:bg-red-800/50 transition flex flex-col items-center gap-2">
+                                    <i class="fas fa-gavel text-xl"></i> Saisie Casier
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-citizens" class="tab-content hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="orbitron text-2xl font-bold">BASE DE DONNÉES CITOYENS</h2>
+                        <button class="bg-blue-600 px-4 py-2 rounded text-sm hover:bg-blue-500">+ Ajouter Individu</button>
+                    </div>
+                    <div class="flex gap-4">
+                        <input type="text" id="searchCitizen" placeholder="Rechercher (Nom, Prénom, Matricule...)" class="flex-grow bg-slate-900 border border-slate-700 p-3 rounded">
+                        <button onclick="searchCitizen()" class="bg-slate-700 px-6 rounded hover:bg-slate-600">Rechercher</button>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-800/80">
+                                <tr>
+                                    <th class="p-4 text-xs font-bold uppercase">Citoyen</th>
+                                    <th class="p-4 text-xs font-bold uppercase">Date de Naissance</th>
+                                    <th class="p-4 text-xs font-bold uppercase">Statut</th>
+                                    <th class="p-4 text-xs font-bold uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="citizenList">
+                                <tr class="border-t border-slate-800 hover:bg-slate-800/30 transition">
+                                    <td class="p-4 flex items-center gap-3">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-10 h-10 rounded bg-slate-700">
+                                        <div>
+                                            <p class="font-bold">John DOE</p>
+                                            <p class="text-xs text-slate-500">ID: 45012</p>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-sm">12/05/1992</td>
+                                    <td class="p-4"><span class="bg-green-500/10 text-green-500 px-2 py-1 rounded text-xs border border-green-500/20">En Règle</span></td>
+                                    <td class="p-4 text-blue-400 cursor-pointer hover:underline text-sm">Voir Fiche</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="tab-casiers" class="tab-content hidden space-y-6">
+                    <h2 class="orbitron text-2xl font-bold">CASIERS JUDICIAIRES</h2>
+                    <div class="bg-red-950/20 border border-red-900/30 p-4 rounded-lg flex items-center gap-4 mb-6">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                        <p class="text-sm text-red-200">Attention : Toute modification est tracée et envoyée au bureau du Procureur (Staff).</p>
+                    </div>
+                    <button class="bg-red-600 px-6 py-3 rounded-lg font-bold hover:bg-red-500 transition mb-4">
+                        <i class="fas fa-plus mr-2"></i> CRÉER UNE NOUVELLE ENTRÉE
+                    </button>
+                    <div class="glass-card rounded-xl p-6">
+                        <div class="flex items-center justify-center h-48 text-slate-500 italic">
+                            Sélectionnez un citoyen pour charger son casier judiciaire.
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-investigations" class="tab-content hidden space-y-6">
+                    <h2 class="orbitron text-2xl font-bold uppercase">Dossiers d'enquêtes</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="glass-card p-6 rounded-xl border-t-2 border-yellow-500">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="text-xs bg-yellow-500/20 text-yellow-500 font-bold px-2 py-1 rounded">PRIORITÉ HAUTE</span>
+                                <span class="text-xs text-slate-500">#INV-8821</span>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">Vols de véhicules de luxe - Vinewood</h3>
+                            <p class="text-sm text-slate-400 mb-4">Enquête ouverte sur un réseau de export illégal vers le port.</p>
+                            <div class="flex -space-x-2 mb-4">
+                                <img src="https://api.dicebear.com/7.x/initials/svg?seed=JD" class="w-8 h-8 rounded-full border-2 border-slate-900">
+                                <img src="https://api.dicebear.com/7.x/initials/svg?seed=SM" class="w-8 h-8 rounded-full border-2 border-slate-900">
+                            </div>
+                            <button class="w-full bg-slate-800 py-2 rounded hover:bg-slate-700 transition text-sm">Ouvrir le dossier</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-staff" class="tab-content hidden space-y-6">
+                    <h2 class="orbitron text-2xl font-bold text-red-500">ADMINISTRATION & EFFECTIFS</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="glass-card p-4 rounded text-center">
+                            <p class="text-xs text-slate-500 uppercase">Candidatures</p>
+                            <p class="text-2xl font-bold">05</p>
+                        </div>
+                        <div class="glass-card p-4 rounded text-center">
+                            <p class="text-xs text-slate-500 uppercase">Total Officiers</p>
+                            <p class="text-2xl font-bold">42</p>
+                        </div>
+                        <div class="glass-card p-4 rounded text-center text-red-400">
+                            <p class="text-xs text-slate-500 uppercase">Suspensions</p>
+                            <p class="text-2xl font-bold">02</p>
+                        </div>
+                        <div class="glass-card p-4 rounded text-center text-blue-400">
+                            <p class="text-xs text-slate-500 uppercase">Promotions Libres</p>
+                            <p class="text-2xl font-bold">03</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-xl overflow-hidden mt-8">
+                        <div class="bg-slate-800 p-4 font-bold border-b border-slate-700">Gestion du Personnel</div>
+                        <table class="w-full text-left">
+                            <thead class="text-xs text-slate-500 bg-slate-900">
+                                <tr>
+                                    <th class="p-4">Agent</th>
+                                    <th class="p-4">Grade</th>
+                                    <th class="p-4">Statut</th>
+                                    <th class="p-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-t border-slate-800">
+                                    <td class="p-4">Frank Tenpenny</td>
+                                    <td class="p-4 font-bold text-blue-400">Commander</td>
+                                    <td class="p-4"><span class="status-badge bg-green-500/20 text-green-500 border border-green-500/30">ACTIF</span></td>
+                                    <td class="p-4">
+                                        <button class="text-xs bg-slate-700 px-2 py-1 rounded hover:bg-slate-600">Modifier</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-evidence" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+        <div class="max-w-3xl w-full p-4">
+            <div class="glass-card rounded-xl overflow-hidden">
+                <div class="p-4 flex justify-between bg-slate-900">
+                    <h3 class="orbitron">PREUVE #IMG-9912</h3>
+                    <button onclick="closeModal()" class="text-red-500"><i class="fas fa-times"></i></button>
+                </div>
+                <img src="https://images.unsplash.com/photo-1563206767-5b18f218e7de?q=80&w=2069&auto=format&fit=crop" class="w-full h-96 object-cover">
+                <div class="p-6 space-y-2 text-sm">
+                    <p><b>Agent :</b> J. Miller (22-04)</p>
+                    <p><b>Description :</b> Saisie de stupéfiants lors du raid à Strawberry.</p>
+                    <p class="text-slate-500 italic">Pris le 03/03/2026 à 14:22</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const DISCORD_CLIENT_ID = "1472338134766321856";
+        const REDIRECT_URI = encodeURIComponent("http://localhost:3000/auth/callback");
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1478178908561215498/xCASiPk1WjK6EMGJcBw0H60haGY_Wi1mClGPdsvttmSB9aXaspSyRn21mE5UAzyM6KJ1";
+        
+        // APP STATE
+        let currentUser = null;
+
+        // AUTH LOGIC
+        function loginWithDiscord() {
+            // Dans un vrai environnement, ceci redirigerait vers Discord
+            // On simule pour le MDT local
+            window.location.href = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&scope=identify+guilds`;
+        }
+
+        function bypassLogin() {
+            // Simulation d'une session réussie
+            currentUser = {
+                username: "L. PENDLEBURY",
+                id: "1472338134766321856",
+                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=99",
+                rank: "Lieutenant",
+                badge: "LT-01",
+                isAdmin: true
+            };
+            initApp();
+            logToDiscord("CONNEXION", `L'agent **${currentUser.username}** s'est connecté au MDT.`, 0x00ff00);
+        }
+
+        function initApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            
+            document.getElementById('user-name').innerText = currentUser.username;
+            document.getElementById('user-badge').innerText = `Matricule: ${currentUser.badge}`;
+            document.getElementById('user-avatar').src = currentUser.avatar;
+
+            if(currentUser.isAdmin) {
+                document.getElementById('admin-menu').classList.remove('hidden');
+            }
+            
+            startClock();
+        }
+
+        // NAVIGATION
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+        }
+
+        // UTILS
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('current-time').innerText = now.toLocaleTimeString('fr-FR');
+            }, 1000);
+        }
+
+        function logout() {
+            logToDiscord("DÉCONNEXION", `L'agent **${currentUser.username}** a fermé sa session.`, 0xff0000);
+            location.reload();
+        }
+
+        // WEBHOOK LOGGING
+        async function logToDiscord(action, details, color = 0x3b82f6) {
+            const payload = {
+                embeds: [{
+                    title: `📱 MDT LOG - ${action}`,
+                    description: details,
+                    color: color,
+                    timestamp: new Date().toISOString(),
+                    footer: { text: "Daytona RP | LAPD Mobile Unit" },
+                    author: {
+                        name: currentUser ? `${currentUser.username} (${currentUser.badge})` : "Système"
+                    }
+                }]
+            };
+
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                console.error("Erreur Log Webhook", e);
+            }
+        }
+
+        // ACTIONS SIMULEES
+        function searchCitizen() {
+            const val = document.getElementById('searchCitizen').value;
+            if(val) {
+                logToDiscord("RECHERCHE", `Recherche effectuée en base de données : **${val}**`);
+                alert("Recherche en cours dans les archives du LSPD...");
+            }
+        }
+    </script>
+</body>
+</html>
