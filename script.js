@@ -7,59 +7,76 @@ function daytonaOS() {
         loginForm: { badge: '', pass: '' },
         search: { citizen: '' },
         modals: { addCitizen: false },
+        
         citizens: [],
         stats: { warrants: 0 },
         newCitizen: { firstname: '', lastname: '', birth: '', phone: '', wanted: false },
+        newStaff: { name: '', badge: '', pass: '', rank: 'Officier' },
 
         initOS() {
-            this.updateTime();
-            setInterval(() => this.updateTime(), 1000);
+            setInterval(() => {
+                this.currentTime = new Date().toLocaleTimeString('fr-FR');
+            }, 1000);
             
-            // Load Local Data
-            this.citizens = JSON.parse(localStorage.getItem('dt_citizens')) || [];
+            // Chargement sécurisé
+            const data = localStorage.getItem('dt_data_v5');
+            this.citizens = data ? JSON.parse(data) : [];
             this.updateStats();
         },
 
-        updateTime() {
-            const now = new Date();
-            this.currentTime = now.toLocaleTimeString('fr-FR');
-        },
-
         attemptLogin() {
-            const staff = JSON.parse(localStorage.getItem('dt_staff')) || [
+            const staffs = JSON.parse(localStorage.getItem('dt_staff')) || [
                 { badge: '75-01', pass: 'daytona2026', name: 'Admin', rank: 'Staff' }
             ];
-            const user = staff.find(s => s.badge === this.loginForm.badge && s.pass === this.loginForm.pass);
-            
-            if (user) {
-                this.user = { ...user, isAdmin: (user.rank === 'Staff' || user.rank === 'Capitaine') };
+
+            const found = staffs.find(s => s.badge === this.loginForm.badge && s.pass === this.loginForm.pass);
+            if (found) {
+                this.user = { ...found, isAdmin: found.rank === 'Staff' };
                 this.session.authenticated = true;
             } else {
-                alert("Identifiants invalides");
+                alert("ACCÈS REFUSÉ : Badge ou mot de passe incorrect.");
             }
         },
 
         saveCitizen() {
-            this.citizens.push({...this.newCitizen, id: Date.now()});
-            localStorage.setItem('dt_citizens', JSON.stringify(this.citizens));
+            if(!this.newCitizen.firstname) return;
+            this.citizens.push({ ...this.newCitizen, id: Date.now() });
+            this.saveData();
             this.modals.addCitizen = false;
             this.newCitizen = { firstname: '', lastname: '', birth: '', phone: '', wanted: false };
         },
 
-        get filteredCitizens() {
-            return this.citizens.filter(c => 
-                c.lastname.toLowerCase().includes(this.search.citizen.toLowerCase())
-            );
+        deleteCitizen(id) {
+            if(confirm("Supprimer définitivement ce dossier ?")) {
+                this.citizens = this.citizens.filter(c => c.id !== id);
+                this.saveData();
+            }
+        },
+
+        toggleWarrant(id) {
+            const idx = this.citizens.findIndex(c => c.id === id);
+            this.citizens[idx].wanted = !this.citizens[idx].wanted;
+            this.saveData();
+        },
+
+        saveData() {
+            localStorage.setItem('dt_data_v5', JSON.stringify(this.citizens));
+            this.updateStats();
         },
 
         updateStats() {
             this.stats.warrants = this.citizens.filter(c => c.wanted).length;
         },
 
-        logout() {
-            this.session.authenticated = false;
+        get filteredCitizens() {
+            return this.citizens.filter(c => 
+                c.lastname.toLowerCase().includes(this.search.citizen.toLowerCase()) ||
+                c.phone.includes(this.search.citizen)
+            );
         },
 
-        openModal(m) { this.modals[m] = true; }
+        logout() {
+            this.session.authenticated = false;
+        }
     }
 }
