@@ -1,86 +1,127 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" x-data="daytonaOS()">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDT LAPD - Daytona RP</title>
+    <title>DAYTONA RP | MOBILE DATA TERMINAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body x-init="initOS()">
+    <div class="scanline"></div>
 
-    <div class="tablet-container">
-        <aside class="sidebar">
-            <div class="brand">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Seal_of_the_Los_Angeles_Police_Department.svg" alt="LAPD">
-                <h2 class="orbitron">MDT v4.2</h2>
-            </div>
-            
-            <div class="user-profile">
-                <img id="user-avatar" src="https://via.placeholder.com/50" alt="Avatar">
-                <div class="user-info">
-                    <p id="user-name">Non connecté</p>
-                    <span id="user-rank" class="rank-badge">Visiteur</span>
+    <template x-if="!session.authenticated">
+        <div class="login-overlay">
+            <div class="login-box glass">
+                <img src="Design_sans_sdqdq-removebg-preview.png" class="logo-main">
+                <h1 class="font-big text-6xl">DAYTONA <span class="text-blue-500">MDT</span></h1>
+                <div class="login-form">
+                    <input x-model="loginForm.badge" type="text" placeholder="MATRICULE">
+                    <input x-model="loginForm.pass" type="password" placeholder="MOT DE PASSE">
+                    <button @click="attemptLogin()" class="btn-primary">DÉCHIFFRER LE CANAL</button>
                 </div>
             </div>
+        </div>
+    </template>
 
-            <nav class="nav-menu">
-                <button class="btn-nav active" onclick="showTab('dashboard')"><i class="fas fa-th-large"></i> Dashboard</button>
-                <button class="btn-nav" onclick="showTab('citizens')"><i class="fas fa-users"></i> Citoyens</button>
-                <button class="btn-nav" onclick="showTab('reports')"><i class="fas fa-file-signature"></i> Rapports</button>
-                <button class="btn-nav" onclick="showTab('evidence')"><i class="fas fa-camera"></i> Preuves</button>
-                <button id="admin-btn" class="btn-nav admin-only" onclick="showTab('admin')" style="display:none;"><i class="fas fa-user-shield"></i> Staff Panel</button>
+    <div x-show="session.authenticated" class="main-wrapper" x-cloak>
+        <aside class="sidebar glass">
+            <div class="sidebar-header">
+                <img src="LAPD.png" class="badge-icon">
+                <p class="rank" x-text="user.rank"></p>
+                <p class="name" x-text="user.name"></p>
+            </div>
+            <nav class="nav-links">
+                <button @click="page = 'dash'" :class="page === 'dash' && 'active'"><i class="fa-solid fa-house"></i> DASHBOARD</button>
+                <button @click="page = 'citizens'" :class="page === 'citizens' && 'active'"><i class="fa-solid fa-users"></i> CITOYENS</button>
+                <button @click="page = 'vehicles'" :class="page === 'vehicles' && 'active'"><i class="fa-solid fa-car"></i> VÉHICULES</button>
+                <button @click="page = 'reports'" :class="page === 'reports' && 'active'"><i class="fa-solid fa-file-pen"></i> RAPPORTS</button>
+                <div class="divider"></div>
+                <button x-show="user.isAdmin" @click="page = 'admin'" :class="page === 'admin' && 'active'"><i class="fa-solid fa-shield-halved"></i> STAFF PANEL</button>
             </nav>
-
-            <button class="btn-logout" onclick="logout()"><i class="fas fa-power-off"></i> Déconnexion</button>
+            <button @click="logout()" class="logout-btn">FIN DE SERVICE</button>
         </aside>
 
-        <main class="content">
-            <header class="top-header">
-                <div class="status">
-                    <span class="pulse"></span> SYSTÈME OPÉRATIONNEL - <span id="clock">00:00:00</span>
-                </div>
-                <div class="discord-auth" id="login-section">
-                    <button onclick="loginDiscord()" class="btn-discord"><i class="fab fa-discord"></i> Connexion</button>
-                </div>
+        <main class="content-area">
+            <header class="top-bar glass">
+                <div class="status-indicator"><span class="pulse"></span> LIGNE SÉCURISÉE</div>
+                <div class="clock" x-text="currentTime"></div>
             </header>
 
-            <section id="tab-dashboard" class="tab-content">
-                <h1 class="orbitron">Tableau de Bord</h1>
-                <div class="stats-grid">
-                    <div class="stat-card blue"><h3>Unités</h3><p>08</p></div>
-                    <div class="stat-card red"><h3>Mandats</h3><p>03</p></div>
-                    <div class="stat-card green"><h3>Interventions</h3><p>12</p></div>
-                </div>
-                <div class="recent-activity">
-                    <h3>Activités Récentes</h3>
-                    <ul id="log-list">
-                        <li>Chargement des logs...</li>
-                    </ul>
-                </div>
-            </section>
-
-            <section id="tab-citizens" class="tab-content" style="display:none;">
-                <h1 class="orbitron">Recherche Citoyen</h1>
-                <div class="search-bar">
-                    <input type="text" id="citizen-search-input" placeholder="Nom ou Prénom...">
-                    <button onclick="searchCitizen()"><i class="fas fa-search"></i></button>
-                </div>
-                <div id="citizen-results" class="results-grid"></div>
-            </section>
-
-            <section id="tab-admin" class="tab-content" style="display:none;">
-                <h1 class="orbitron text-danger">Panel Administration</h1>
-                <div id="admin-content">
+            <section class="page-content glass">
+                <div x-show="page === 'dash'" class="fade-in">
+                    <div class="hero-card">
+                        <img src="image_ebddfb.png" class="bg-logo">
+                        <h2>BIENVENUE SUR DAYTONA</h2>
+                        <p>Système Intranet de Sécurité Publique</p>
                     </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><h3>MANDATS</h3><p x-text="stats.warrants"></p></div>
+                        <div class="stat-card"><h3>UNITÉS</h3><p>12</p></div>
+                        <div class="stat-card"><h3>AVIS DE RECHERCHE</h3><p>04</p></div>
+                    </div>
+                </div>
+
+                <div x-show="page === 'citizens'" class="fade-in">
+                    <div class="search-bar">
+                        <input x-model="search.citizen" type="text" placeholder="RECHERCHER UN NOM OU UN NUMÉRO...">
+                        <button @click="openModal('addCitizen')" class="btn-add">+</button>
+                    </div>
+                    <div class="data-grid">
+                        <template x-for="c in filteredCitizens" :key="c.id">
+                            <div class="data-card">
+                                <div class="card-header">
+                                    <span x-text="c.firstname + ' ' + c.lastname"></span>
+                                    <span class="tag" :class="c.wanted ? 'red' : 'blue'" x-text="c.wanted ? 'RECHERCHÉ' : 'OK'"></span>
+                                </div>
+                                <div class="card-body">
+                                    <p>Né le: <span x-text="c.birth"></span></p>
+                                    <p>Tél: <span x-text="c.phone"></span></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div x-show="page === 'admin'" class="fade-in">
+                   <h2 class="section-title">Gestion des Effectifs</h2>
+                   <div class="admin-grid">
+                       <div class="form-container glass">
+                           <input x-model="newStaff.name" type="text" placeholder="Nom complet">
+                           <input x-model="newStaff.badge" type="text" placeholder="Matricule">
+                           <input x-model="newStaff.pass" type="text" placeholder="Mot de passe">
+                           <select x-model="newStaff.rank">
+                               <option>Officier</option>
+                               <option>Sergent</option>
+                               <option>Capitaine</option>
+                               <option>Staff</option>
+                           </select>
+                           <button @click="addStaff()" class="btn-primary">ENRÔLER</button>
+                       </div>
+                   </div>
+                </div>
             </section>
         </main>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
+    <div x-show="modals.addCitizen" class="modal-overlay" x-cloak>
+        <div class="modal glass">
+            <h3>Nouveau Dossier</h3>
+            <div class="input-group">
+                <input x-model="newCitizen.firstname" type="text" placeholder="Prénom">
+                <input x-model="newCitizen.lastname" type="text" placeholder="Nom">
+                <input x-model="newCitizen.birth" type="text" placeholder="DD/MM/YYYY">
+                <input x-model="newCitizen.phone" type="text" placeholder="Téléphone">
+            </div>
+            <div class="modal-footer">
+                <button @click="saveCitizen()" class="btn-save">ENREGISTRER</button>
+                <button @click="modals.addCitizen = false" class="btn-cancel">ANNULER</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script src="admin.js"></script>
 </body>
